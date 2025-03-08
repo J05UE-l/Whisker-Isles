@@ -4,28 +4,31 @@ export default class GameScene extends Phaser.Scene {
     }
 
     preload() {
+        // Carregar os recursos necessários
         this.load.image('background', 'assets/Background.jpg');
         this.load.spritesheet('cat', 'assets/BurmeseCatAnimationSheet.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('charging', 'assets/Charging.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('Reviving', 'assets/Revive.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('merchant', 'assets/merchant.png', { frameWidth: 94, frameHeight: 91 });
-        this.load.tilemapTiledJSON('map', 'assets/Rogue_cat_v3.json'); // Ensure the correct path
-        this.load.image('tiles', 'assets/Ground_tiles.png'); // Ensure the correct path
-        this.load.image('props', 'assets/Props.png'); // Ensure the correct path
+        this.load.tilemapTiledJSON('map', 'assets/Rogue_cat_v3.json');
+        this.load.image('tiles', 'assets/Ground_tiles.png');
+        this.load.image('props', 'assets/Props.png');
         this.load.image('sardine', 'assets/sardine.png');
         this.load.image('Title frame', 'assets/Title_frame.png');
     }
 
     create() {
+        // Configurar a cena inicial
         this.cameras.main.fadeIn(1000, 0, 0, 0);
         this.add.image(1600, 320, 'background');
         this.add.image(120, 80, 'Title frame').setScrollFactor(0).setScale(2);
-        this.add.image(80, 55, 'sardine').setScale(0.24).setScrollFactor(0).setDepth(11); // Corrected this line
-        this.cat = this.physics.add.sprite(200, 288, 'cat').setScale(2).setDepth(6);
+        this.add.image(80, 55, 'sardine').setScale(0.24).setScrollFactor(0).setDepth(11);
+        this.cat = this.physics.add.sprite(200, 288, 'cat').setScale(2).setDepth(6);//personagem principal
         const sardine = this.physics.add.image(1220, 240, 'sardine').setScale(0.15).setDepth(10);
-                sardine.body.setAllowGravity(false);
-let points = 0;
-        const score = this.add.text(140, 30, points, { fontSize: '60px', fill: '#000000' }).setScrollFactor(0); ;
+        sardine.body.setAllowGravity(false);//gravidade
+        let points = 0;
+        const score = this.add.text(140, 30, points, { fontSize: '60px', fill: '#000000' }).setScrollFactor(0);//adicionar score
+        //adicionar mapa do tiled
         const map = this.make.tilemap({ key: "map" });
         const tileset = map.addTilesetImage("Ground_tiles", "tiles");
         const props = map.addTilesetImage("Props", "props");
@@ -34,8 +37,8 @@ let points = 0;
         const layer3 = map.createLayer("main structures", props, 0, 0).setDepth(3);
         const layer4 = map.createLayer("details", props, 0, 0).setDepth(4);
 
-        layer1.setCollisionByExclusion(-1);
-        this.physics.add.collider(this.cat, layer1); // Add collision with "Islands" layer
+        layer1.setCollisionByExclusion(-1);//colisão do gato com o mapa
+        this.physics.add.collider(this.cat, layer1);
         
         this.physics.add.overlap(this.cat, sardine, () => {
             sardine.setVisible(false);
@@ -45,6 +48,7 @@ let points = 0;
             score.setText(points);
             sardine.setVisible(true);
         });
+        //camera seguir o gato
         this.cameras.main.startFollow(this.cat);
         this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
@@ -52,7 +56,7 @@ let points = 0;
         this.chargingSprite.setAlpha(0.7);
         this.Rev = this.add.sprite(this.cat.x, this.cat.y, 'Reviving').setVisible(false).setScale(2).setDepth(10);
         this.teclado = this.input.keyboard.createCursorKeys();
-
+        //criar animações
         this.anims.create({
             key: 'idle',
             frames: this.anims.generateFrameNumbers('cat', { start: 0, end: 3 }),
@@ -113,6 +117,7 @@ let points = 0;
     }
 
     update() {
+        //controles do gato
         if (this.teclado.left.isDown) {
             this.cat.setVelocityX(-150);
             this.cat.anims.play('walk', true);
@@ -153,6 +158,7 @@ let points = 0;
         } else if (this.cat.body.velocity.y > 0) {
             this.cat.anims.play('fall', true);
         }
+        //reset do gato caso caia do mapa
         if (this.cat.y > 640) {
             this.revive();
         }
@@ -164,12 +170,12 @@ let points = 0;
         this.power += 0.5;
     }
 
-    charge() {
+    charge() {//carregar pulo
         this.chargingSprite.setVisible(true);
         this.chargingSprite.anims.play('charge', true);
     }
 
-    revive() {
+    revive() {//reset do gato caso caia do mapa
         this.cat.setPosition(200, 288);
         this.cat.setVelocity(0, 0);
         this.Rev.setVisible(true);
